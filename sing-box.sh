@@ -114,13 +114,14 @@ install_sing_box() {
     ssport=$(generate_unused_port)
     ss_password=$(sing-box generate rand 16 --base64)
     password=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
-
+    
     # 生成 UUID 和 Reality 密钥对
     uuid=$(sing-box generate uuid)
     reality_output=$(sing-box generate reality-keypair)
     private_key=$(echo "${reality_output}" | grep -oP 'PrivateKey:\s*\K.*')
     public_key=$(echo "${reality_output}" | grep -oP 'PublicKey:\s*\K.*')
-
+    # 自动生成 short_id
+    short_id=$(openssl rand -hex 8)
     # 生成自签名证书
     mkdir -p "${CONFIG_DIR}"
     openssl ecparam -genkey -name prime256v1 -out "${CONFIG_DIR}/private.key" || {
@@ -148,162 +149,142 @@ install_sing_box() {
     # 生成配置文件
     cat > "${CONFIG_FILE}" << EOF
 {
-  "log": {
-    "level": "debug",
-    "timestamp": true,
-    "output": "${LOG_FILE}"
-  },
-  "dns": {
-    "servers": [
-      {
-        "address": "https://1.1.1.1/dns-query",
-        "strategy": "prefer_ipv4"
-      },
-      {
-        "address": "https://8.8.8.8/dns-query",
-        "strategy": "prefer_ipv4"
-      }
-    ]
-  },
-  "inbounds": [
-    {
-      "type": "hysteria2",
-      "tag": "hysteria-in",
-      "listen": "::",
-      "listen_port": ${hport},
-      "users": [
+    "log": {
+      "level": "debug",
+      "timestamp": true,
+      "output": "${LOG_FILE}"
+    },
+    "dns": {
+      "servers": [
         {
-          "password": "${password}"
+          "tag": "google",
+          "address": "udp://8.8.8.8" 
         }
-      ],
-      "masquerade": "https://bing.com",
-      "tls": {
-        "enabled": true,
-        "alpn": [
-          "h3"
+      ]
+    },
+    "inbounds": [
+      {
+        "type": "hysteria2",
+        "tag": "hy2-in",
+        "listen": "::",
+        "listen_port": ${hport},
+        "sniff": true,
+        "users": [
+          {
+            "name": "singbox",
+            "password": "${password}"
+          }
         ],
-        "certificate_path": "${CONFIG_DIR}/cert.pem",
-        "key_path": "${CONFIG_DIR}/private.key"
-      }
-    },
-    {
-      "type": "vless",
-      "tag": "vless-in",
-      "listen": "::",
-      "listen_port": ${vport},
-      "users": [
-        {
-          "uuid": "${uuid}",
-          "flow": "xtls-rprx-vision"
-        }
-      ],
-      "tls": {
-        "enabled": true,
-        "server_name": "www.tesla.com",
-        "reality": {
+        "masquerade": "https://www.bing.com",
+        "tls": {
           "enabled": true,
-          "handshake": {
-            "server": "www.tesla.com",
-            "server_port": 443
-          },
-          "private_key": "${private_key}",
-          "short_id": [
-            "123abc"
-          ]
+          "alpn": [
+            "h3"
+          ],
+          "certificate_path": "${CONFIG_DIR}/cert.pem",
+          "key_path": "${CONFIG_DIR}/private.key"
         }
-      }
-    },
-    {
-      "type": "shadowtls",
-      "listen": "::",
-      "listen_port": ${sport},
-      "detour": "shadowsocks-in",
-      "version": 3,
-      "users": [
-        {
-          "password": "${password}"
+      },
+      {
+        "type": "vless",
+        "tag": "vless-in",
+        "listen": "::",
+        "listen_port": ${vport},
+        "sniff": true, 
+        "users": [
+          {
+            "name": "lang",
+            "uuid": "${uuid}",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "tls": {
+          "enabled": true,
+          "server_name": "www.tesla.com",
+          "reality": {
+            "enabled": true,
+            "handshake": {
+              "server": "www.tesla.com",
+              "server_port": 443
+            },
+            "private_key": "${private_key}",
+            "short_id": [
+              "${short_id}"
+            ]
+          }
         }
-      ],
-      "handshake": {
-        "server": "www.bing.com",
-        "server_port": 443
-      },
-      "strict_mode": true
-    },
-    {
-      "type": "shadowsocks",
-      "tag": "shadowsocks-in",
-      "listen": "127.0.0.1",
-      "listen_port": ${ssport},
-      "method": "2022-blake3-aes-128-gcm",
-      "password": "${ss_password}",
-      "multiplex": {
-        "enabled": true
-      }
-    }
-  ],
-  "outbounds": [
-    {
-      "type": "direct",
-      "tag": "direct"
-    },
-    {
-      "type": "wireguard",
-      "tag": "wireguard-out",
-      "server": "${WARP_IPV4}",
-      "server_port": 2408,
-      "local_address": [
-        "172.16.0.2/32",
-        "${WARP_IPV6}/128"
-      ],
-      "private_key": "${WARP_private}",
-      "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-      "reserved": [${WARP_Reserved}],
-      "mtu": 1280
-    },
-    {
-      "type": "socks",
-      "tag": "warp-proxy",
-      "server": "127.0.0.1",
-      "server_port": 40000,
-      "version": "5"
-    }
-  ],
-  "route": {
-    "rule_set": [
-      {
-        "tag": "geosite-disney",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-disney.srs",
-        "download_detour": "direct"
       },
       {
-        "tag": "geosite-openai",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-openai.srs",
-        "download_detour": "direct"
+        "type": "shadowtls",
+        "listen": "::",
+        "listen_port": ${sport},
+        "version": 3,
+        "users": [
+          {
+            "name": "lang",
+            "password": "${password}"
+          }
+        ],
+        "handshake": {
+          "server": "www.bing.com",
+          "server_port": 443
+        },
+        "strict_mode": false,
+        "detour": "shadowsocks-in"
       },
       {
-        "tag": "geosite-netflix",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-netflix.srs",
-        "download_detour": "direct"
+        "type": "shadowsocks",
+        "tag": "shadowsocks-in",
+        "listen": "127.0.0.1",
+        "listen_port": ${ssport},
+        "sniff": true,
+        "method": "2022-blake3-aes-128-gcm",
+        "password": "${ss_password}",
+        "multiplex": {
+          "enabled": true
+        }
       }
     ],
-    "rules": [
+    "outbounds": [
       {
-        "outbound": "wireguard-out",
-        "rule_set": ["geosite-disney", "geosite-openai", "geosite-netflix"]
+        "type": "direct",
+        "tag": "direct"
       },
       {
-        "outbound": "direct",
-        "network": ["udp", "tcp"]
+        "type": "wireguard",
+        "tag": "wireguard-out",
+        "server": "${WARP_IPV4}",
+        "server_port": 2408,
+        "local_address": [
+          "172.16.0.2/32",
+          "${WARP_IPV6}/128" 
+        ],
+        "private_key": "${WARP_private}",
+        "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+        "reserved":[${WARP_Reserved}],
+        "mtu": 1280 
       }
-    ]
-  }
+    ],
+    "route": {
+      "geosite": {
+        "download_url": "https://github.com/SagerNet/sing-geosite/releases/latest/download/geosite.db",
+        "download_detour": "direct"
+        },
+      "geoip": {
+        "download_url": "https://github.com/soffchen/sing-geoip/releases/latest/download/geoip.db",
+        "download_detour": "direct"
+        },
+      "rules": [
+        {
+          "geosite": [
+            "netflix",
+            "openai",
+            "disney"
+          ],
+          "outbound": "wireguard-out"  
+        }
+      ]
+    }
 }
 EOF
 
@@ -328,7 +309,7 @@ EOF
     # 输出客户端配置到文件
     {
         cat << EOF
-  - name: ${ip_country}
+  - name: ${ip_country}-hy2
     type: hysteria2
     server: ${host_ip}
     port: ${hport}
@@ -337,9 +318,8 @@ EOF
       - h3
     sni: www.bing.com
     skip-cert-verify: true
-    fast-open: true
 
-  - name: ${ip_country}
+  - name: ${ip_country}-vless
     type: vless
     server: ${host_ip}
     port: ${vport}
@@ -351,10 +331,10 @@ EOF
     servername: www.tesla.com
     reality-opts:
       public-key: ${public_key}
-      short-id: 123abc
+      short-id: ${short_id}
     client-fingerprint: chrome
 
-  - name: ${ip_country}
+  - name: ${ip_country}-ss
     type: ss
     server: ${host_ip}
     port: ${sport}
@@ -364,7 +344,6 @@ EOF
     plugin: shadow-tls
     client-fingerprint: chrome
     plugin-opts:
-      mode: tls
       host: www.bing.com
       password: ${password}
       version: 3
@@ -372,14 +351,13 @@ EOF
       enabled: true
 EOF
 
+        echo "节点信息："
         echo
-        echo "hy2://${password}@${host_ip}:${hport}?insecure=1&sni=www.bing.com#${ip_country}"
+        echo "${ip_country}-hy2 = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
         echo
-        echo "${ip_country} = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
-        echo
-        echo "${ip_country} = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
+        echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
         echo 
-        echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=123abc&type=tcp&headerType=none#${ip_country}"
+        echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=${short_id}&type=tcp&headerType=none#${ip_country}-vless"
         echo
     } > "${CLIENT_CONFIG_FILE}"
 
