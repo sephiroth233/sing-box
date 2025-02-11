@@ -150,7 +150,7 @@
         "download_detour": "direct"
       }
     ],
-    "rules": [
+    "rules": [ 
       {
         "outbound": "wireguard-out",
         "rule_set": ["geosite-disney", "geosite-openai", "geosite-netflix"]
