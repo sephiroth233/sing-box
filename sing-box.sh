@@ -215,12 +215,13 @@ install_sing_box() {
     },
     {
       "type": "shadowtls",
+      "tag": "Shadowsocks+ShadowTLS+Padding",
       "listen": "::",
       "listen_port": ${sport},
-      "detour": "shadowsocks-in",
       "version": 3,
       "users": [
         {
+          "name": "hdauis",
           "password": "${password}"
         }
       ],
@@ -228,25 +229,17 @@ install_sing_box() {
         "server": "www.bing.com",
         "server_port": 443
       },
-      "handshake_for_server_name": {
-        "www.bing.com": {
-          "server": "www.bing.com",
-          "server_port": 443,
-        }
-      },
-      "strict_mode": true
+      "strict_mode": true,
+      "detour": "shadowsocks-shadowtls-in"
     },
     {
       "type": "shadowsocks",
-      "tag": "shadowsocks-in",
+      "tag": "shadowsocks-shadowtls-in",
       "listen": "127.0.0.1",
-      "listen_port": ${ssport},
+      "sniff": true,
+      "sniff_override_destination": false,
       "method": "2022-blake3-aes-128-gcm",
-      "password": "${ss_password}",
-      "multiplex": {
-        "enabled": true,
-        "padding": true
-      }
+      "password": "${ss_password}"
     }
   ],
   "outbounds": [
@@ -303,11 +296,18 @@ install_sing_box() {
     "rules": [
       {
         "outbound": "wireguard-out",
-        "rule_set": ["geosite-disney", "geosite-openai", "geosite-netflix"]
+        "rule_set": [
+          "geosite-disney",
+          "geosite-openai",
+          "geosite-netflix"
+        ]
       },
       {
         "outbound": "direct",
-        "network": ["udp", "tcp"]
+        "network": [
+          "udp",
+          "tcp"
+        ]
       }
     ]
   }

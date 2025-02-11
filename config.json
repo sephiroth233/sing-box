@@ -1,165 +1,165 @@
 {
-    "log": {
-      "level": "debug",
-      "timestamp": true,
-      "output": "${LOG_FILE}"
-    },
-    "dns": {
-      "servers": [
-        {
-          "address": "https://1.1.1.1/dns-query",
-          "strategy": "prefer_ipv4"
-        },
-        {
-          "address": "https://8.8.8.8/dns-query",
-          "strategy": "prefer_ipv4"
-        }
-      ]
-    },
-    "inbounds": [
+  "log": {
+    "level": "debug",
+    "timestamp": true,
+    "output": "${LOG_FILE}"
+  },
+  "dns": {
+    "servers": [
       {
-        "type": "hysteria2",
-        "tag": "hysteria-in",
-        "listen": "::",
-        "listen_port": ${hport},
-        "users": [
-          {
-            "password": "${password}"
-          }
-        ],
-        "masquerade": "https://bing.com",
-        "tls": {
-          "enabled": true,
-          "alpn": [
-            "h3"
-          ],
-          "certificate_path": "${CONFIG_DIR}/cert.pem",
-          "key_path": "${CONFIG_DIR}/private.key"
-        }
+        "address": "https://1.1.1.1/dns-query",
+        "strategy": "prefer_ipv4"
       },
       {
-        "type": "vless",
-        "tag": "vless-in",
-        "listen": "::",
-        "listen_port": ${vport},
-        "users": [
-          {
-            "uuid": "${uuid}",
-            "flow": "xtls-rprx-vision"
-          }
-        ],
-        "tls": {
-          "enabled": true,
-          "server_name": "www.tesla.com",
-          "reality": {
-            "enabled": true,
-            "handshake": {
-              "server": "www.tesla.com",
-              "server_port": 443
-            },
-            "private_key": "${private_key}",
-            "short_id": [
-              "${short_id}"
-            ]
-          }
-        }
-      },
-      {
-        "type": "shadowtls",
-        "listen": "::",
-        "listen_port": ${sport},
-        "detour": "shadowsocks-in",
-        "version": 3,
-        "users": [
-          {
-            "password": "${password}"
-          }
-        ],
-        "handshake": {
-          "server": "www.bing.com",
-          "server_port": 443
-        },
-        "handshake_for_server_name": {
-          "www.bing.com": {
-            "server": "www.bing.com",
-            "server_port": 443,
-          }
-        },
-        "strict_mode": true
-      },
-      {
-        "type": "shadowsocks",
-        "tag": "shadowsocks-in",
-        "listen": "127.0.0.1",
-        "listen_port": ${ssport},
-        "method": "2022-blake3-aes-128-gcm",
-        "password": "${ss_password}",
-        "multiplex": {
-          "enabled": true,
-          "padding": true
-        }
+        "address": "https://8.8.8.8/dns-query",
+        "strategy": "prefer_ipv4"
       }
-    ],
-    "outbounds": [
-      {
-        "type": "direct",
-        "tag": "direct"
-      },
-      {
-        "type": "wireguard",
-        "tag": "wireguard-out",
-        "server": "${WARP_IPV4}",
-        "server_port": 2408,
-        "local_address": [
-          "172.16.0.2/32",
-          "${WARP_IPV6}/128"
-        ],
-        "private_key": "${WARP_private}",
-        "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-        "reserved": [${WARP_Reserved}],
-        "mtu": 1280
-      },
-      {
-        "type": "socks",
-        "tag": "warp-proxy",
-        "server": "127.0.0.1",
-        "server_port": 40000,
-        "version": "5"
-      }
-    ],
-    "route": {
-      "rule_set": [
+    ]
+  },
+  "inbounds": [
+    {
+      "type": "hysteria2",
+      "tag": "hysteria-in",
+      "listen": "::",
+      "listen_port": ${hport},
+      "users": [
         {
-          "tag": "geosite-disney",
-          "type": "remote",
-          "format": "binary",
-          "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-disney.srs",
-          "download_detour": "direct"
-        },
-        {
-          "tag": "geosite-openai",
-          "type": "remote",
-          "format": "binary",
-          "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-openai.srs",
-          "download_detour": "direct"
-        },
-        {
-          "tag": "geosite-netflix",
-          "type": "remote",
-          "format": "binary",
-          "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-netflix.srs",
-          "download_detour": "direct"
+          "password": "${password}"
         }
       ],
-      "rules": [
+      "masquerade": "https://bing.com",
+      "tls": {
+        "enabled": true,
+        "alpn": [
+          "h3"
+        ],
+        "certificate_path": "${CONFIG_DIR}/cert.pem",
+        "key_path": "${CONFIG_DIR}/private.key"
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-in",
+      "listen": "::",
+      "listen_port": ${vport},
+      "users": [
         {
-          "outbound": "wireguard-out",
-          "rule_set": ["geosite-disney", "geosite-openai", "geosite-netflix"]
-        },
-        {
-          "outbound": "direct",
-          "network": ["udp", "tcp"]
+          "uuid": "${uuid}",
+          "flow": "xtls-rprx-vision"
         }
-      ]
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.tesla.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "www.tesla.com",
+            "server_port": 443
+          },
+          "private_key": "${private_key}",
+          "short_id": [
+            "${short_id}"
+          ]
+        }
+      }
+    },
+    {
+      "type": "shadowtls",
+      "tag": "Shadowsocks+ShadowTLS+Padding",
+      "listen": "::",
+      "listen_port": ${sport},
+      "version": 3,
+      "users": [
+        {
+          "name": "hdauis",
+          "password": "${password}"
+        }
+      ],
+      "handshake": {
+        "server": "www.bing.com",
+        "server_port": 443
+      },
+      "strict_mode": true,
+      "detour": "shadowsocks-shadowtls-in"
+    },
+    {
+      "type": "shadowsocks",
+      "tag": "shadowsocks-shadowtls-in",
+      "listen": "127.0.0.1",
+      "sniff": true,
+      "sniff_override_destination": false,
+      "method": "2022-blake3-aes-128-gcm",
+      "password": "${ss_password}"
     }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "wireguard",
+      "tag": "wireguard-out",
+      "server": "${WARP_IPV4}",
+      "server_port": 2408,
+      "local_address": [
+        "172.16.0.2/32",
+        "${WARP_IPV6}/128"
+      ],
+      "private_key": "${WARP_private}",
+      "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+      "reserved": [${WARP_Reserved}],
+      "mtu": 1280
+    },
+    {
+      "type": "socks",
+      "tag": "warp-proxy",
+      "server": "127.0.0.1",
+      "server_port": 40000,
+      "version": "5"
+    }
+  ],
+  "route": {
+    "rule_set": [
+      {
+        "tag": "geosite-disney",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-disney.srs",
+        "download_detour": "direct"
+      },
+      {
+        "tag": "geosite-openai",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-openai.srs",
+        "download_detour": "direct"
+      },
+      {
+        "tag": "geosite-netflix",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-netflix.srs",
+        "download_detour": "direct"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "wireguard-out",
+        "rule_set": [
+          "geosite-disney",
+          "geosite-openai",
+          "geosite-netflix"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "network": [
+          "udp",
+          "tcp"
+        ]
+      }
+    ]
   }
+}
