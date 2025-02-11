@@ -76,14 +76,8 @@
         }
       ],
       "handshake": {
-        "server": "captive.apple.com",
-        "server_port": 443
-      },
-      "handshake_for_server_name": {
-        "www.bing.com": {
         "server": "www.bing.com",
-        "server_port": 443,
-        }
+        "server_port": 443
       },
       "strict_mode": true
     },
@@ -150,7 +144,7 @@
         "download_detour": "direct"
       }
     ],
-    "rules": [ 
+    "rules": [
       {
         "outbound": "wireguard-out",
         "rule_set": ["geosite-disney", "geosite-openai", "geosite-netflix"]
