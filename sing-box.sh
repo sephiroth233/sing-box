@@ -373,10 +373,10 @@ EOF
 EOF
 
       
-        echo
+        echo  
         echo "${ip_country}-hy2 = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
         echo
-        echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
+        echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true,udp-port=${ssport}"
         echo 
         echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=${short_id}&type=tcp&headerType=none#${ip_country}-vless"
         echo

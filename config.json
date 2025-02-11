@@ -2,7 +2,7 @@
   "log": {
     "level": "debug",
     "timestamp": true,
-    "output": "/var/log/singbox.log"
+    "output": "${LOG_FILE}"
   },
   "dns": {
     "servers": [
@@ -21,10 +21,10 @@
       "type": "hysteria2",
       "tag": "hysteria-in",
       "listen": "::",
-      "listen_port": 51775,
+      "listen_port": ${hport},
       "users": [
         {
-          "password": "eF0eluQZhjMR"
+          "password": "${password}"
         }
       ],
       "masquerade": "https://bing.com",
@@ -33,18 +33,18 @@
         "alpn": [
           "h3"
         ],
-        "certificate_path": "/etc/sing-box/cert.pem",
-        "key_path": "/etc/sing-box/private.key"
+        "certificate_path": "${CONFIG_DIR}/cert.pem",
+        "key_path": "${CONFIG_DIR}/private.key"
       }
     },
     {
       "type": "vless",
       "tag": "vless-in",
       "listen": "::",
-      "listen_port": 56168,
+      "listen_port": ${vport},
       "users": [
         {
-          "uuid": "ef557602-c683-45bf-ba29-f49bb8b3aa77",
+          "uuid": "${uuid}",
           "flow": "xtls-rprx-vision"
         }
       ],
@@ -57,7 +57,7 @@
             "server": "www.tesla.com",
             "server_port": 443
           },
-          "private_key": "mCRKMbSHnC9itcaweyzchVhXbxiE8g_RdK668_PRWF8",
+          "private_key": "${private_key}",
           "short_id": [
             "${short_id}"
           ]
@@ -67,17 +67,23 @@
     {
       "type": "shadowtls",
       "listen": "::",
-      "listen_port": 34287,
+      "listen_port": ${sport},
       "detour": "shadowsocks-in",
       "version": 3,
       "users": [
         {
-          "password": "eF0eluQZhjMR"
+          "password": "${password}"
         }
       ],
       "handshake": {
-        "server": "www.bing.com",
+        "server": "captive.apple.com",
         "server_port": 443
+      },
+      "handshake_for_server_name": {
+        "www.bing.com": {
+        "server": "www.bing.com",
+        "server_port": 443,
+        }
       },
       "strict_mode": true
     },
@@ -85,9 +91,9 @@
       "type": "shadowsocks",
       "tag": "shadowsocks-in",
       "listen": "127.0.0.1",
-      "listen_port": 9591,
+      "listen_port": ${ssport},
       "method": "2022-blake3-aes-128-gcm",
-      "password": "S76l3SXImKinUaxRbsNGsw==",
+      "password": "${ss_password}",
       "multiplex": {
         "enabled": true
       }
@@ -101,15 +107,15 @@
     {
       "type": "wireguard",
       "tag": "wireguard-out",
-      "server": "162.159.192.8",
+      "server": "${WARP_IPV4}",
       "server_port": 2408,
       "local_address": [
         "172.16.0.2/32",
-        "2606:4700:110:8c30:e8a9:fd10:2731:3bc6/128"
+        "${WARP_IPV6}/128"
       ],
-      "private_key": "+E8WFmFn6k9uNy3cCBk122I2OAp150oDSD7Xq2BLAUc=",
+      "private_key": "${WARP_private}",
       "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-      "reserved": [77, 49, 163],
+      "reserved": [${WARP_Reserved}],
       "mtu": 1280
     },
     {
