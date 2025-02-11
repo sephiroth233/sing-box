@@ -120,7 +120,7 @@ install_sing_box() {
     reality_output=$(sing-box generate reality-keypair)
     private_key=$(echo "${reality_output}" | grep -oP 'PrivateKey:\s*\K.*')
     public_key=$(echo "${reality_output}" | grep -oP 'PublicKey:\s*\K.*')
-    short_id=$(openssl rand -hex 8 )
+    short_id=$(sing-box generate rand 8 --hex)
     # 生成自签名证书
     mkdir -p "${CONFIG_DIR}"
     openssl ecparam -genkey -name prime256v1 -out "${CONFIG_DIR}/private.key" || {
@@ -228,6 +228,12 @@ install_sing_box() {
         "server": "www.bing.com",
         "server_port": 443
       },
+      "handshake_for_server_name": {
+        "www.bing.com": {
+          "server": "www.bing.com",
+          "server_port": 443,
+        }
+      },
       "strict_mode": true
     },
     {
@@ -238,7 +244,8 @@ install_sing_box() {
       "method": "2022-blake3-aes-128-gcm",
       "password": "${ss_password}",
       "multiplex": {
-        "enabled": true
+        "enabled": true,
+        "padding": true
       }
     }
   ],
