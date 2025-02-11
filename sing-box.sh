@@ -209,7 +209,7 @@ install_sing_box() {
           },
           "private_key": "mCRKMbSHnC9itcaweyzchVhXbxiE8g_RdK668_PRWF8",
           "short_id": [
-            "123abc"
+            "${short_id}"
           ]
         }
       }
@@ -352,7 +352,7 @@ EOF
     servername: www.tesla.com
     reality-opts:
       public-key: ${public_key}
-      short-id: 123abc
+      short-id: ${short_id}
     client-fingerprint: chrome
 
   - name: ${ip_country}-ss
@@ -380,7 +380,7 @@ EOF
         echo
         echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
         echo 
-        echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=123abc&type=tcp&headerType=none#${ip_country}-vless"
+        echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=${short_id}&type=tcp&headerType=none#${ip_country}-vless"
         echo
     } > "${CLIENT_CONFIG_FILE}"
 

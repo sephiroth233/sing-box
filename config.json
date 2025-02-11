@@ -59,7 +59,7 @@
           },
           "private_key": "mCRKMbSHnC9itcaweyzchVhXbxiE8g_RdK668_PRWF8",
           "short_id": [
-            "123abc"
+            "${short_id}"
           ]
         }
       }
