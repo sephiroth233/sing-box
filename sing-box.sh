@@ -110,7 +110,7 @@ install_sing_box() {
     is_port_available
     hport=65301
     vport=65302
-    sport=35303
+    sport=65303
     ssport=7890
     ss_password=$(sing-box generate rand 16 --base64)
     password=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
