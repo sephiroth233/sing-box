@@ -108,10 +108,10 @@ install_sing_box() {
     # 生成随机端口和密码
     check_ss_command
     is_port_available
-    hport=$(generate_unused_port)
-    vport=$(generate_unused_port)
-    sport=$(generate_unused_port)
-    ssport=$(generate_unused_port)
+    hport=65301
+    vport=65302
+    sport=35303
+    ssport=7890
     ss_password=$(sing-box generate rand 16 --base64)
     password=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
 
