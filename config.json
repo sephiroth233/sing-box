@@ -2,49 +2,49 @@
   "log": {
     "level": "debug",
     "timestamp": true,
-    "output": "${LOG_FILE}"
+    "output": "/var/log/singbox.log"
   },
   "dns": {
     "servers": [
       {
-        "tag": "google",
-        "address": "udp://8.8.8.8" 
+        "address": "https://1.1.1.1/dns-query",
+        "strategy": "prefer_ipv4"
+      },
+      {
+        "address": "https://8.8.8.8/dns-query",
+        "strategy": "prefer_ipv4"
       }
     ]
   },
   "inbounds": [
     {
       "type": "hysteria2",
-      "tag": "hy2-in",
+      "tag": "hysteria-in",
       "listen": "::",
-      "listen_port": ${hport},
-      "sniff": true,
+      "listen_port": 51775,
       "users": [
         {
-          "name": "singbox",
-          "password": "${password}"
+          "password": "eF0eluQZhjMR"
         }
       ],
-      "masquerade": "https://www.bing.com",
+      "masquerade": "https://bing.com",
       "tls": {
         "enabled": true,
         "alpn": [
           "h3"
         ],
-        "certificate_path": "${CONFIG_DIR}/cert.pem",
-        "key_path": "${CONFIG_DIR}/private.key"
+        "certificate_path": "/etc/sing-box/cert.pem",
+        "key_path": "/etc/sing-box/private.key"
       }
     },
     {
       "type": "vless",
       "tag": "vless-in",
       "listen": "::",
-      "listen_port": ${vport},
-      "sniff": true, 
+      "listen_port": 56168,
       "users": [
         {
-          "name": "lang",
-          "uuid": "${uuid}",
+          "uuid": "ef557602-c683-45bf-ba29-f49bb8b3aa77",
           "flow": "xtls-rprx-vision"
         }
       ],
@@ -57,9 +57,9 @@
             "server": "www.tesla.com",
             "server_port": 443
           },
-          "private_key": "${private_key}",
+          "private_key": "mCRKMbSHnC9itcaweyzchVhXbxiE8g_RdK668_PRWF8",
           "short_id": [
-            "${short_id}"
+            "123abc"
           ]
         }
       }
@@ -67,29 +67,27 @@
     {
       "type": "shadowtls",
       "listen": "::",
-      "listen_port": ${sport},
+      "listen_port": 34287,
+      "detour": "shadowsocks-in",
       "version": 3,
       "users": [
         {
-          "name": "lang",
-          "password": "${password}"
+          "password": "eF0eluQZhjMR"
         }
       ],
       "handshake": {
         "server": "www.bing.com",
         "server_port": 443
       },
-      "strict_mode": false,
-      "detour": "shadowsocks-in"
+      "strict_mode": true
     },
     {
       "type": "shadowsocks",
       "tag": "shadowsocks-in",
       "listen": "127.0.0.1",
-      "listen_port": ${ssport},
-      "sniff": true,
+      "listen_port": 9591,
       "method": "2022-blake3-aes-128-gcm",
-      "password": "${ss_password}",
+      "password": "S76l3SXImKinUaxRbsNGsw==",
       "multiplex": {
         "enabled": true
       }
@@ -103,35 +101,57 @@
     {
       "type": "wireguard",
       "tag": "wireguard-out",
-      "server": "${WARP_IPV4}",
+      "server": "162.159.192.8",
       "server_port": 2408,
       "local_address": [
         "172.16.0.2/32",
-        "${WARP_IPV6}/128" 
+        "2606:4700:110:8c30:e8a9:fd10:2731:3bc6/128"
       ],
-      "private_key": "${WARP_private}",
+      "private_key": "+E8WFmFn6k9uNy3cCBk122I2OAp150oDSD7Xq2BLAUc=",
       "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-      "reserved":[${WARP_Reserved}],
-      "mtu": 1280 
+      "reserved": [77, 49, 163],
+      "mtu": 1280
+    },
+    {
+      "type": "socks",
+      "tag": "warp-proxy",
+      "server": "127.0.0.1",
+      "server_port": 40000,
+      "version": "5"
     }
   ],
   "route": {
-    "geosite": {
-      "download_url": "https://github.com/SagerNet/sing-geosite/releases/latest/download/geosite.db",
-      "download_detour": "direct"
+    "rule_set": [
+      {
+        "tag": "geosite-disney",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-disney.srs",
+        "download_detour": "direct"
       },
-    "geoip": {
-      "download_url": "https://github.com/soffchen/sing-geoip/releases/latest/download/geoip.db",
-      "download_detour": "direct"
+      {
+        "tag": "geosite-openai",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-openai.srs",
+        "download_detour": "direct"
       },
+      {
+        "tag": "geosite-netflix",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-netflix.srs",
+        "download_detour": "direct"
+      }
+    ],
     "rules": [
       {
-        "geosite": [
-          "netflix",
-          "openai",
-          "disney"
-        ],
-        "outbound": "wireguard-out"  
+        "outbound": "wireguard-out",
+        "rule_set": ["geosite-disney", "geosite-openai", "geosite-netflix"]
+      },
+      {
+        "outbound": "direct",
+        "network": ["udp", "tcp"]
       }
     ]
   }
