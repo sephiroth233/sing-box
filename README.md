@@ -4,7 +4,7 @@
 
 ## 一键脚本
 ```
-bash <(curl -fsSL sing-box-sigma.vercel.app)
+bash <(curl -fsSL sing-box-mu.vercel.app)
 ```
 ## 项目简介
 - 输出客户端配置 url 方便快速设置
