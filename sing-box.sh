@@ -208,7 +208,7 @@ install_sing_box() {
           },
           "private_key": "${private_key}",
           "short_id": [
-            "123abc"
+            "${short_id}"
           ]
         }
       }
@@ -328,7 +328,7 @@ EOF
     # 输出客户端配置到文件
     {
         cat << EOF
-  - name: ${ip_country}
+  - name: ${ip_country}-hy2
     type: hysteria2
     server: ${host_ip}
     port: ${hport}
@@ -339,7 +339,7 @@ EOF
     skip-cert-verify: true
     fast-open: true
 
-  - name: ${ip_country}
+  - name: ${ip_country}-vless
     type: vless
     server: ${host_ip}
     port: ${vport}
@@ -351,10 +351,10 @@ EOF
     servername: www.tesla.com
     reality-opts:
       public-key: ${public_key}
-      short-id: 123abc
+      short-id: ${short_id}
     client-fingerprint: chrome
 
-  - name: ${ip_country}
+  - name: ${ip_country}-ss
     type: ss
     server: ${host_ip}
     port: ${sport}
@@ -372,14 +372,13 @@ EOF
       enabled: true
 EOF
 
+      
         echo
-        echo "hy2://${password}@${host_ip}:${hport}?insecure=1&sni=www.bing.com#${ip_country}"
+        echo "${ip_country}-hy2 = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
         echo
-        echo "${ip_country} = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
-        echo
-        echo "${ip_country} = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
+        echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
         echo 
-        echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=123abc&type=tcp&headerType=none#${ip_country}"
+        echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=1${short_id}&type=tcp&headerType=none#${ip_country}-vless"
         echo
     } > "${CLIENT_CONFIG_FILE}"
 
