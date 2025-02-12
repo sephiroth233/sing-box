@@ -87,7 +87,7 @@ is_port_available() {
 generate_unused_port() {
     local port
     while true; do
-        port=$(shuf -i 1025-65535 -n 1)
+        port=$(shuf -i 65300-65400 -n 1)
         if is_port_available $port; then
             echo $port
             return
@@ -108,10 +108,9 @@ install_sing_box() {
     # 生成随机端口和密码
     check_ss_command
     is_port_available
-    hport=65301
-    vport=65302
-    sport=65303
-    ssport=7890
+    hport=$(generate_unused_port)
+    vport=$(generate_unused_port)
+    sport=$(generate_unused_port)
     ss_password=$(sing-box generate rand 16 --base64)
     password=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
 
@@ -121,6 +120,7 @@ install_sing_box() {
     private_key=$(echo "${reality_output}" | grep -oP 'PrivateKey:\s*\K.*')
     public_key=$(echo "${reality_output}" | grep -oP 'PublicKey:\s*\K.*')
     short_id=$(sing-box generate rand 8 --hex)
+
     # 生成自签名证书
     mkdir -p "${CONFIG_DIR}"
     openssl ecparam -genkey -name prime256v1 -out "${CONFIG_DIR}/private.key" || {
@@ -228,6 +228,12 @@ install_sing_box() {
       "handshake": {
         "server": "www.bing.com",
         "server_port": 443
+      },
+      "handshake_for_server_name": {
+         "www.bing.com": {
+           "server": "www.bing.com",
+           "server_port":443
+         }
       },
       "strict_mode": true,
       "detour": "shadowsocks-shadowtls-in"
