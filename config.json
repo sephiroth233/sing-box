@@ -77,12 +77,12 @@
         }
       ],
       "handshake": {
-        "server": "www.bing.com",
+        "server": "${tls_server_name}",
         "server_port": 443
       },
       "handshake_for_server_name": {
-         "www.bing.com": {
-           "server": "www.bing.com",
+         "${tls_server_name}": {
+           "server": "${tls_server_name}",
            "server_port":443
          }
       },

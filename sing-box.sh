@@ -120,7 +120,7 @@ install_sing_box() {
     private_key=$(echo "${reality_output}" | grep -oP 'PrivateKey:\s*\K.*')
     public_key=$(echo "${reality_output}" | grep -oP 'PublicKey:\s*\K.*')
     short_id=$(sing-box generate rand 8 --hex)
-
+    tls_server_name=mp.weixin.qq.com
     # 生成自签名证书
     mkdir -p "${CONFIG_DIR}"
     openssl ecparam -genkey -name prime256v1 -out "${CONFIG_DIR}/private.key" || {
@@ -226,12 +226,12 @@ install_sing_box() {
         }
       ],
       "handshake": {
-        "server": "www.bing.com",
+        "server": "${tls_server_name}",
         "server_port": 443
       },
       "handshake_for_server_name": {
-         "www.bing.com": {
-           "server": "www.bing.com",
+         "${tls_server_name}": {
+           "server": "${tls_server_name}",
            "server_port":443
          }
       },
@@ -389,7 +389,7 @@ EOF
         echo  
         echo "${ip_country}-hy2 = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
         echo
-        echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=www.bing.com, shadow-tls-version=3, udp-relay=true"
+        echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=${tls_server_name}, shadow-tls-version=3, udp-relay=true"
         echo 
         echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=${short_id}&type=tcp&headerType=none#${ip_country}-vless"
         echo
