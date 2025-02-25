@@ -301,6 +301,14 @@ install_sing_box() {
     ],
     "rules": [
       {
+        "outbound": "wireguard-out",
+        "rule_set": [
+          "geosite-disney",
+          "geosite-openai",
+          "geosite-netflix"
+        ]
+      },
+      {
         "outbound": "direct",
         "network": [
           "udp",
