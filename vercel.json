@@ -4,6 +4,11 @@
       "source": "/",
       "destination": "https://raw.githubusercontent.com/sephiroth233/sing-box/refs/heads/master/sing-box.sh",
       "permanent": true
+    },
+    {
+      "source": "/warp",
+      "destination": "https://raw.githubusercontent.com/sephiroth233/sing-box/refs/heads/master/sing-box-warp.sh",
+      "permanent": true
     }
   ]
 }
