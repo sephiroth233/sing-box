@@ -2,9 +2,26 @@
 
 ![preview](image.png)
 
-## 一键脚本
+## ps：修复了ss2022+shadowtls协议的问题
+
+## 一键脚本(无warp)
+1.直接执行脚本：
 ```
 bash <(curl -fsSL sing-box-mu.vercel.app)
+```
+2.保存脚本到本地并执行：
+```
+curl -fsSL sing-box-mu.vercel.app -o sing-box.sh && bash sing-box.sh
+```
+
+## 一键脚本(有warp)
+1.直接执行脚本：
+```
+bash <(curl -fsSL sing-box-mu.vercel.app/warp)
+```
+2.保存脚本到本地并执行：
+```
+curl -fsSL sing-box-mu.vercel.app/warp -o sing-box-warp.sh && bash sing-box-warp.sh
 ```
 ## 项目简介
 - 输出客户端配置 url 方便快速设置
