@@ -136,14 +136,6 @@ install_sing_box() {
     host_ip=$(curl -s http://checkip.amazonaws.com)
     ip_country=$(curl -s http://ipinfo.io/${host_ip}/country)
 
-    # 下载并执行脚本，将输出导入当前shell环境
-    eval "$(curl -fsSL https://raw.githubusercontent.com/sephiroth233/sing-box/main/wireguard.sh)"
-    
-    # 提取变量
-    WARP_IPV4=$(echo "$WARP_IPV4")
-    WARP_IPV6=$(echo "$WARP_IPV6")
-    WARP_private=$(echo "$WARP_private")
-    WARP_Reserved=$(echo "$WARP_Reserved")
 
     # 生成配置文件
     cat > "${CONFIG_FILE}" << EOF
@@ -252,53 +244,9 @@ install_sing_box() {
     {
       "type": "direct",
       "tag": "direct"
-    },
-    {
-      "type": "wireguard",
-      "tag": "wireguard-out",
-      "server": "${WARP_IPV4}",
-      "server_port": 2408,
-      "local_address": [
-        "172.16.0.2/32",
-        "${WARP_IPV6}/128"
-      ],
-      "private_key": "${WARP_private}",
-      "peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-      "reserved": [${WARP_Reserved}],
-      "mtu": 1280
-    },
-    {
-      "type": "socks",
-      "tag": "warp-proxy",
-      "server": "127.0.0.1",
-      "server_port": 40000,
-      "version": "5"
     }
   ],
   "route": {
-    "rule_set": [
-      {
-        "tag": "geosite-disney",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-disney.srs",
-        "download_detour": "direct"
-      },
-      {
-        "tag": "geosite-openai",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-openai.srs",
-        "download_detour": "direct"
-      },
-      {
-        "tag": "geosite-netflix",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-netflix.srs",
-        "download_detour": "direct"
-      }
-    ],
     "rules": [
       {
         "outbound": "direct",
@@ -382,7 +330,7 @@ EOF
         echo "${ip_country}-hy2 = hysteria2, ${host_ip}, ${hport}, password = ${password}, skip-cert-verify=true, sni=www.bing.com"
         echo
         echo "${ip_country}-ss = ss, ${host_ip}, ${sport}, encrypt-method=2022-blake3-aes-128-gcm, password=${ss_password}, shadow-tls-password=${password}, shadow-tls-sni=${tls_server_name}, shadow-tls-version=3, udp-relay=true"
-        echo 
+        echo
         echo "vless://${uuid}@${host_ip}:${vport}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.tesla.com&fp=chrome&pbk=${public_key}&sid=${short_id}&type=tcp&headerType=none#${ip_country}-vless"
         echo
     } > "${CLIENT_CONFIG_FILE}"
